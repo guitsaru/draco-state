@@ -1,28 +1,56 @@
 # Draco::StateMachine
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/draco/state_machine`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
-
-## Installation
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'draco-state_machine'
-```
-
-And then execute:
-
-    $ bundle install
-
-Or install it yourself as:
-
-    $ gem install draco-state_machine
+This library provides a DSL to define state machine based systems in [Draco](https://github.com/guitsaru/draco).
 
 ## Usage
 
-TODO: Write usage instructions here
+### Components
+
+This library provides a way to add a state attribute to a component.
+
+```ruby
+class GuardBehavior < Draco::Component
+  include Draco::State
+
+  state :state, [:patrolling, :alert], default: :patrolling
+end
+
+class Guard < Draco::Entity
+  component GuardBehavior
+end
+```
+
+This gives us the ability to say we want the system to set a new state.
+
+```ruby
+guard.guard_behavior.state = :alert
+
+guard.guard_behavior.state
+# => :patrolling
+
+guard.guard_behavior.next_state
+# => :alert
+```
+
+### Systems
+
+Now that we have a component, we can implement the state machine as a System.
+
+```ruby
+class GuardBehaviorStateMachine < Draco::System
+  include Draco::StateMachine
+
+  component GuardBehavior, :state
+
+  on(:alert) do |entity|
+    entity.components << Radio.new
+  end
+
+  on(:patrolling) do |entity|
+    entity.components.delete(Radio)
+  end
+end
+```
 
 ## Development
 
