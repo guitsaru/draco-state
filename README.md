@@ -1,53 +1,49 @@
-# Draco::StateMachine
+# Draco::State
 
-This library provides a DSL to define state machine based systems in [Draco](https://github.com/guitsaru/draco).
+This library provides a DSL to define state based entities in [Draco](https://github.com/guitsaru/draco).
 
 ## Usage
 
-### Components
+### Entities
 
-This library provides a way to add a state attribute to a component.
+This plugin allows you to specify a set of components where only one component can be active at a time. This allows
+you to build state machine based systems or just to keep your entities from getting in unnatural states.
 
 ```ruby
-class GuardBehavior < Draco::Component
+class Guard < Draco::Entity
   include Draco::State
 
-  state :state, [:patrolling, :alert], default: :patrolling
-end
-
-class Guard < Draco::Entity
-  component GuardBehavior
+  state [Walking, Running, Jumping, Standing], default: Standing.new
 end
 ```
 
-This gives us the ability to say we want the system to set a new state.
+If you don't define a default component, it will create an instance of the first component in the list. When you want to switch states, just add the new component:
 
 ```ruby
-guard.guard_behavior.state = :alert
+guard = Guard.new
+guard.components << Walking.new
 
-guard.guard_behavior.state
-# => :patrolling
+guard.state_changed.from
+# => {class: "Standing"}
 
-guard.guard_behavior.next_state
-# => :alert
+guard.state_changed.to
+# => {class: "Walking"}
+
+guard.state_changed.at
+# => 2021-01-05 00:44:24.522127229 +0700
 ```
 
 ### Systems
 
-Now that we have a component, we can implement the state machine as a System.
+Since the `Draco::StateChanged` component was added, we can write a system to deal with newly changed entities:
 
 ```ruby
-class GuardBehaviorStateMachine < Draco::System
-  include Draco::StateMachine
+class StateSystem < Draco::System
+  filter Draco::StateChanged
 
-  component GuardBehavior, :state
-
-  on(:alert) do |entity|
-    entity.components << Radio.new
-  end
-
-  on(:patrolling) do |entity|
-    entity.components.delete(Radio)
+  def tick(args)
+    entity.components.add(Active)
+    entity.components.delete(entity.state_changed)
   end
 end
 ```
@@ -60,7 +56,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/draco-state_machine. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/draco-state_machine/blob/master/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/draco-state. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/draco-state/blob/master/CODE_OF_CONDUCT.md).
 
 
 ## License
@@ -69,4 +65,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the Draco::StateMachine project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/draco-state_machine/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the Draco::StateMachine project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/draco-state/blob/master/CODE_OF_CONDUCT.md).

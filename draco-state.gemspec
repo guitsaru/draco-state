@@ -1,13 +1,13 @@
-require_relative 'lib/draco/state_machine'
+require_relative 'lib/draco/state'
 
 Gem::Specification.new do |spec|
-  spec.name          = "draco-state_machine"
+  spec.name          = "draco-state"
   spec.version       = Draco::StateMachine::VERSION
   spec.authors       = ["Matt Pruitt"]
   spec.email         = ["matt@guitsaru.com"]
 
   spec.summary       = %q{A Draco add-on to enable writing state machines}
-  spec.homepage      = "https://github.com/guitsaru/draco-state_machine"
+  spec.homepage      = "https://github.com/guitsaru/draco-state"
   spec.license       = "MIT"
   spec.required_ruby_version = Gem::Requirement.new(">= 2.3.0")
 
@@ -22,4 +22,6 @@ Gem::Specification.new do |spec|
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
+
+  spec.add_runtime_dependency "draco"
 end

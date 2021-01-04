@@ -1,5 +1,6 @@
 require "bundler/setup"
-require "draco/state_machine"
+require "draco"
+require "draco/state"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

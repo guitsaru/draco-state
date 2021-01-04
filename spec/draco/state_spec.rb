@@ -1,87 +1,78 @@
 require "draco"
 
+class FirstComponent < Draco::Component
+  attribute :test, default: false
+end
+
+class SecondComponent < Draco::Component
+  attribute :test, default: false
+end
+
+class TestEntity < Draco::Entity
+  include Draco::State
+
+  state [FirstComponent, SecondComponent]
+end
+
+class TestEntityWithDefault < Draco::Entity
+  include Draco::State
+
+  state [FirstComponent, SecondComponent], default: SecondComponent.new(test: true)
+end
+
 RSpec.describe Draco::State do
-  class StateComponent < Draco::Component
-    include Draco::State
+  context "without default" do
+    subject { TestEntity.new }
 
-    state :state, [:first, :second]
-  end
-
-  class DefaultComponent < Draco::Component
-    include Draco::State
-
-    state :state, [:first, :second], default: :second
-  end
-
-  describe "#state" do
-    subject { StateComponent.new }
-
-    it "has an initial value" do
-      expect(subject.state).to eq(:first)
+    it "defaults to the first component" do
+      expect(subject.first_component).to be
     end
 
-    it "sets the default value" do
-      component = DefaultComponent.new
-
-      expect(component.state).to eq(:second)
-    end
-
-    it "throws an exception when the default is not in the list" do
-      expect do
-        class IncorrectComponent < Draco::Component
-          include Draco::State
-
-          state :state, [:first, :second], default: :third
-        end
-      end.to raise_exception(Draco::State::InvalidState)
+    it "does not add a StateChanged component" do
+      expect(subject.components[:state_changed]).to be_nil
     end
   end
 
-  describe "#next_state" do
-    subject { StateComponent.new }
+  context "with default" do
+    subject { TestEntityWithDefault.new }
 
-    it "doesn't have an initial value" do
-      expect(subject.next_state).to be_nil
+    it "applies the default" do
+      expect(subject.second_component.test).to be_truthy
     end
   end
 
-  describe "#state=" do
-    subject { StateComponent.new }
+  context "when adding a different state component" do
+    subject { TestEntity.new }
 
-    it "sets next_state with a valid state" do
-      subject.state = :second
-      expect(subject.state).to eq(:first)
-      expect(subject.next_state).to eq(:second)
+    it "applies the new component" do
+      subject.components << SecondComponent.new
+
+      expect(subject.second_component).to be
     end
 
-    it "throws an error with an invalid state" do
-      expect { subject.state = :third }.to raise_exception(Draco::State::InvalidState)
+    it "removes the old component" do
+      subject.components << SecondComponent.new
+
+      expect(subject.components[:first_component]).to be_nil
+    end
+
+    it "adds a state_changed component" do
+      from = subject.first_component
+      to = SecondComponent.new
+      subject.components << to
+
+      expect(subject.state_changed.to).to eq(to)
+      expect(subject.state_changed.from).to eq(from)
+      expect(subject.state_changed.at).to be
     end
   end
 
-  describe "#next_state=" do
-    subject { StateComponent.new }
+  context "when removing a state component" do
+    subject { TestEntity.new }
+    let(:component) { subject.first_component }
 
     it "raises an error" do
-      expect { subject.next_state = :second }.to raise_exception(NoMethodError)
-    end
-  end
-
-  describe "#commit_state" do
-    subject { StateComponent.new }
-
-    it "sets the new state" do
-      subject.state = :second
-      subject.commit_state
-
-      expect(subject.state).to eq(:second)
-    end
-
-    it "clears the next state" do
-      subject.state = :second
-      subject.commit_state
-
-      expect(subject.next_state).to be_nil
+      expect { subject.components.delete(component) }.to raise_error(Draco::State::StateNotSetError)
     end
   end
 end

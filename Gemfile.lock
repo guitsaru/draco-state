@@ -1,13 +1,14 @@
-PATH
-  remote: .
+GIT
+  remote: https://github.com/guitsaru/draco
+  revision: b3ae4faa72439c9c9932d407f53f70c490bf9806
+  branch: main
   specs:
-    draco-state_machine (0.0.1)
+    draco (0.5.1)
 
 GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.4.4)
-    draco (0.4.0)
     rake (12.3.3)
     rspec (3.10.0)
       rspec-core (~> 3.10.0)
@@ -27,10 +28,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  draco
-  draco-state_machine!
+  draco!
   rake (~> 12.0)
   rspec (~> 3.0)
 
 BUNDLED WITH
-   2.1.4
+   2.2.3
