@@ -1,8 +1,9 @@
+require "draco"
 require_relative 'lib/draco/state'
 
 Gem::Specification.new do |spec|
   spec.name          = "draco-state"
-  spec.version       = "0.2.0"
+  spec.version       = Draco::State::VERSION
   spec.authors       = ["Matt Pruitt"]
   spec.email         = ["matt@guitsaru.com"]
 
