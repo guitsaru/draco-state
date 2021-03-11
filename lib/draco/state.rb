@@ -1,5 +1,7 @@
 module Draco
   module State
+    VERSION = "0.2.0"
+
     class InvalidDefaultError < StandardError; end
     class NoStatesDefinedError < StandardError; end
     class NotAnEntityError < StandardError; end
